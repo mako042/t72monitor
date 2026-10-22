@@ -15,4 +15,4 @@ receivers:
         chat_id: -5374082987
         send_resolved: true
         parse_mode: HTML
-        message: '{{ range .Alerts }}<b>{{ if eq .Status "firing" }}Проблема{{ else }}Восстановлено{{ end }}: {{ .Labels.alertname }}</b>{{ if .Annotations.summary }}&#10;{{ .Annotations.summary }}{{ end }}{{ if .Annotations.description }}&#10;{{ .Annotations.description }}{{ end }}{{ if .Annotations.details }}&#10;<pre>{{ .Annotations.details }}</pre>{{ end }}&#10;{{ end }}'
+        message: '{{ range .Alerts }}<b>{{ if eq .Status "firing" }}Проблема{{ else }}Восстановлено{{ end }}: {{ .Labels.alertname }}</b>{{ if .Annotations.summary }}&#10;{{ .Annotations.summary }}{{ end }}{{ if .Annotations.description }}&#10;{{ .Annotations.description }}{{ end }}{{ if .Annotations.details }}&#10;&#10;{{ .Annotations.details }}{{ end }}&#10;{{ end }}'
