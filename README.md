@@ -9,7 +9,7 @@ TELEGRAM_BOT_TOKEN=токен_бота
 После этого запустите или перезапустите стек:
 
 ```bash
-docker compose up -d --force-recreate alertmanager prometheus
+docker compose up -d --force-recreate
 ```
 
 Интерфейсы (доступны только локально):
