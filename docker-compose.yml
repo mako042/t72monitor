@@ -1,0 +1,47 @@
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: t72-prometheus
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    depends_on:
+      - blackbox-exporter
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: t72-alertmanager
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./start-alertmanager.sh:/start-alertmanager.sh:ro
+    entrypoint: ["/bin/sh", "/start-alertmanager.sh"]
+    command: []
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.27.0
+    container_name: t72-blackbox-exporter
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/blackbox_exporter/blackbox.yml
+    volumes:
+      - ./blackbox.yml:/etc/blackbox_exporter/blackbox.yml:ro
+    ports:
+      - "127.0.0.1:9115:9115"
+
+volumes:
+  prometheus-data:

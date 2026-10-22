@@ -1,0 +1,28 @@
+groups:
+  - name: t72-availability
+    interval: 30s
+    rules:
+      - alert: Сайт недоступен
+        expr: probe_success{job="t72-https"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+#         summary: "t72.ru недоступен по HTTPS"
+          description: "Проверка {{ $labels.instance }} завершилась ошибкой."
+          details: |
+            Время проверки: {{ with query "time() + 18000" }}{{ with first . }}{{ with value . | toTime }}{{ .Format "2006-01-02 15:04:05" }}{{ end }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+            HTTP-статус: {{ with query (printf "probe_http_status_code{job=\"t72-https\",instance=%q}" $labels.instance) }}{{ with first . }}{{ value . }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+            Резолв: {{ with query (printf "probe_http_duration_seconds{job=\"t72-https\",instance=%q,phase=\"resolve\"}" $labels.instance) }}{{ with first . }}{{ value . | humanizeDuration }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+            Соединение: {{ with query (printf "probe_http_duration_seconds{job=\"t72-https\",instance=%q,phase=\"connect\"}" $labels.instance) }}{{ with first . }}{{ value . | humanizeDuration }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+            Обработка сервером: {{ with query (printf "probe_http_duration_seconds{job=\"t72-https\",instance=%q,phase=\"processing\"}" $labels.instance) }}{{ with first . }}{{ value . | humanizeDuration }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+            Передача ответа: {{ with query (printf "probe_http_duration_seconds{job=\"t72-https\",instance=%q,phase=\"transfer\"}" $labels.instance) }}{{ with first . }}{{ value . | humanizeDuration }}{{ else }}нет данных{{ end }}{{ else }}нет данных{{ end }}
+
+      - alert: T72CertificateExpiresSoon
+        expr: (probe_ssl_earliest_cert_expiry{job="t72-https"} - time()) / 86400 < 14
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Сертификат t72.ru истекает менее чем через 14 дней"
+          description: "До истечения TLS-сертификата осталось {{ $value | humanize }} дней."
